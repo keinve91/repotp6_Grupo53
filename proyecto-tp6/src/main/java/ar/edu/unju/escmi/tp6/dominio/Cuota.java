@@ -53,9 +53,9 @@ public class Cuota {
 	 }
 
 	 @Override
-	public String toString() {
-		return "Monto: " + monto + ", N° De Cuota:" + nroCuota + ", Fecha De Generacion: " + fechaGeneracion
-				+ ", Fecha De Vencimiento: " + fechaVencimiento + "\n";
-	}
+	    public String toString() {
+	        return String.format("Monto: %.2f, N° De Cuota: %d, Fecha De Generacion: %s, Fecha De Vencimiento: %s",
+	                monto, nroCuota, fechaGeneracion, fechaVencimiento);
+	    }
 	    
 }

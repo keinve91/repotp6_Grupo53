@@ -18,4 +18,22 @@ public class CollectionCredito {
 			}
 	    	
 	    }
+	 public static List<Credito> buscarCreditosPorCliente(long dniCliente) {
+	        List<Credito> creditosEncontrados = new ArrayList<>();
+	        
+	        try {
+	            if (creditos != null) {
+	                for (Credito credito : creditos) {
+	                    if (credito.getFactura().getCliente().getDni() == dniCliente) {
+	                        creditosEncontrados.add(credito);
+	                    }
+	                }
+	            }
+	        } catch (Exception e) {
+	            System.out.println("Error al buscar créditos: " + e.getMessage());
+	        }
+	        
+	        return creditosEncontrados;
+	    }
+	 
 }
