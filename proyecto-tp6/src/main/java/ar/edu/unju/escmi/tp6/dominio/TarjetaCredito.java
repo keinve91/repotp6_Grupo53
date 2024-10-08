@@ -24,6 +24,12 @@ public class TarjetaCredito {
 
 
 
+	public double getLimiteCompra() {
+		return limiteCompra;
+	}
+
+
+
 	public long getNumero() {
         return numero;
     }
