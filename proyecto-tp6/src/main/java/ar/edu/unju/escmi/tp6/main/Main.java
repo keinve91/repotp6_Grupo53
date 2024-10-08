@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.InputMismatchException;
 import java.util.List;
 import java.util.Scanner;
+import java.util.stream.Collectors;
+
 import ar.edu.unju.escmi.tp6.collections.*;
 import ar.edu.unju.escmi.tp6.dominio.*;
 
@@ -38,20 +40,39 @@ public class Main {
                         gestionar();
                         break;
                     case 2:
-                        // Implementar lógica para realizar una venta
+                        realizarVenta();
                         break;
                     case 3:
-                        // Implementar lógica para revisar compras
+                    	verComprasPorCliente();
                         break;
                     case 4:
-                        // Implementar lógica para mostrar electrodomésticos
+                    	ElectrodomesticosAhora30();
                         break;
                     case 5:
-                        // Implementar lógica para consultar stock
+                    	try {
+                            // Buscar stock por producto
+                            System.out.print("Ingrese el código del producto: ");
+                            long codigoProductoBuscar = scanner.nextLong();
+                            scanner.nextLine(); // Limpiar buffer
+
+                            Producto productoBuscar = CollectionProducto.buscarProducto(codigoProductoBuscar);
+                            if (productoBuscar == null) {
+                                System.out.println("Producto no encontrado.");
+                            } else {
+                                Stock stockBuscar = CollectionStock.buscarStock(productoBuscar);
+                                if (stockBuscar != null) {
+                                    System.out.println("Producto: " + stockBuscar.getProducto().getDescripcion() +
+                                            ", Cantidad en stock: " + stockBuscar.getCantidad());
+                                } else {
+                                    System.out.println("No se encontró stock para este producto.");
+                                }
+                            }
+                        } catch (Exception e) {
+                            System.out.println("Error al buscar stock: " + e.getMessage());
+                        }
                         break;
                     case 6:
-                        // Implementar lógica para revisar créditos
-                        break;
+                    	revisarCreditos();                       break;
                     case 7:
                         System.out.println("Saliendo del sistema...");
                         break;
@@ -67,8 +88,104 @@ public class Main {
 
         scanner.close();
     }
+    private static void realizarVenta() {
+        System.out.println("\n--- Realizar Venta con Ahora 30 ---");
+        
+        try {
+            System.out.print("Ingrese DNI del cliente: ");
+            long dniCliente = scanner.nextLong();
+            scanner.nextLine();  // Limpiar buffer
+            Cliente cliente = CollectionCliente.buscarCliente(dniCliente);
+            
+            if (cliente == null) {
+                System.out.println("Cliente no encontrado.");
+                return;
+            }
 
-    private static void gestionar() {
+            System.out.print("Ingrese número de tarjeta de crédito: ");
+            long numeroTarjeta = scanner.nextLong();
+            TarjetaCredito tarjetaCredito = CollectionTarjetaCredito.buscarTarjetaCredito(numeroTarjeta);
+
+            if (tarjetaCredito == null || !tarjetaCredito.getCliente().equals(cliente)) {
+                System.out.println("Tarjeta no encontrada o no pertenece al cliente.");
+                return;
+            }
+            
+            CollectionProducto.listarProductos();
+            
+            System.out.print("Ingrese el código del producto que desea comprar: ");
+            long codigoProducto = scanner.nextLong();
+            Producto productoSeleccionado = CollectionProducto.buscarProducto(codigoProducto);
+
+            if (productoSeleccionado == null) {
+                System.out.println("Producto no encontrado.");
+                return;
+            }
+
+            System.out.print("Ingrese la cantidad que desea comprar: ");
+            int cantidad = scanner.nextInt();
+
+            Stock stockProducto = CollectionStock.buscarStock(productoSeleccionado);
+            if (stockProducto == null || stockProducto.getCantidad() < cantidad) {
+                System.out.println("Stock insuficiente.");
+                return;
+            }
+            
+            double totalCompra = productoSeleccionado.getPrecioUnitario() * cantidad;
+            
+            // Verificación del límite de compra para productos generales y teléfonos
+            boolean esTelefono = productoSeleccionado.getDescripcion().toLowerCase().contains("celular");
+            double limiteCompra = esTelefono ? 800000 : 1500000;
+            if (totalCompra > limiteCompra) {
+                System.out.println("La compra excede el límite de " + (esTelefono ? "$800.000" : "$1.500.000"));
+                return;
+            }
+
+            // Verificación del límite de crédito disponible en la tarjeta
+            if (tarjetaCredito.getLimiteCompra() < totalCompra) {
+                System.out.println("Límite insuficiente en la tarjeta de crédito.");
+                return;
+            }
+
+            // Crear el Detalle
+            Detalle detalle = new Detalle(cantidad, totalCompra, productoSeleccionado);
+            List<Detalle> detalles = new ArrayList<>();
+            detalles.add(detalle);
+
+            // Crear la Factura
+            Factura factura = new Factura(LocalDate.now(), (long) (Math.random() * 10000), cliente, detalles);
+            CollectionFactura.agregarFactura(factura);
+
+            // Actualizar el stock
+            stockProducto.setCantidad(stockProducto.getCantidad() - cantidad);
+
+            // Crear el Crédito
+            Credito credito = new Credito(tarjetaCredito, factura, new ArrayList<Cuota>());
+            
+            // Determinar el número de cuotas
+            int numeroCuotas = productoSeleccionado.isCuotas() ? 30 : 9; // 30 si puede aplicar cuotas, 9 en caso contrario
+
+            // Calcular cuotas y agregarlas al crédito
+            credito.generarCuotas(numeroCuotas, totalCompra); // Asegúrate de que esto sea correcto
+
+            // Agregar el crédito a la colección
+            CollectionCredito.agregarCredito(credito);
+
+            // Actualizar el límite disponible en la tarjeta de crédito
+            tarjetaCredito.setLimiteCompra(tarjetaCredito.getLimiteCompra() - totalCompra);
+
+            System.out.println("\n--- Venta realizada exitosamente ---");
+            System.out.println(factura);
+
+        } catch (Exception e) {
+            System.out.println("Ocurrió un error durante la venta: " + e.getMessage());
+        } finally {
+            System.out.println("Proceso de venta finalizado.");
+        }
+    }
+
+
+     private static void gestionar() {
         boolean exit = false;
 
         while (!exit) {
@@ -469,31 +586,6 @@ public class Main {
                             System.out.println("Error al reducir stock: " + e.getMessage());
                         }
                         break;
-
-                    case 4:
-                        try {
-                            // Buscar stock por producto
-                            System.out.print("Ingrese el código del producto: ");
-                            long codigoProductoBuscar = scanner.nextLong();
-                            scanner.nextLine(); // Limpiar buffer
-
-                            Producto productoBuscar = CollectionProducto.buscarProducto(codigoProductoBuscar);
-                            if (productoBuscar == null) {
-                                System.out.println("Producto no encontrado.");
-                            } else {
-                                Stock stockBuscar = CollectionStock.buscarStock(productoBuscar);
-                                if (stockBuscar != null) {
-                                    System.out.println("Producto: " + stockBuscar.getProducto().getDescripcion() +
-                                            ", Cantidad en stock: " + stockBuscar.getCantidad());
-                                } else {
-                                    System.out.println("No se encontró stock para este producto.");
-                                }
-                            }
-                        } catch (Exception e) {
-                            System.out.println("Error al buscar stock: " + e.getMessage());
-                        }
-                        break;
-
                     case 0:
                         System.out.println("Volviendo al menú principal...");
                         break;
@@ -507,6 +599,67 @@ public class Main {
             scanner.nextLine(); // Limpiar el buffer en caso de error
         }
     }
+    private static void verComprasPorCliente() {
+        System.out.print("Ingrese el DNI del cliente: ");
+        long dniCliente = scanner.nextLong();
+        scanner.nextLine(); // Limpiar buffer
+
+        List<Factura> facturas = CollectionFactura.facturas; // Suponiendo que tienes acceso a la lista de facturas
+
+        boolean comprasEncontradas = false; // Bandera para controlar si se encontraron compras
+        System.out.println("\nCompras realizadas por el cliente (DNI: " + dniCliente + "):");
+        
+        for (Factura factura : facturas) {
+            if (factura.getCliente().getDni() == dniCliente) {
+                System.out.println(factura); // Asumiendo que toString() está bien implementado en la clase Factura
+                comprasEncontradas = true; // Se encontraron compras
+            }
+        }
+        
+        if (!comprasEncontradas) {
+            System.out.println("No se encontraron compras para el cliente con DNI: " + dniCliente);
+        }
+    }
+    private static void ElectrodomesticosAhora30() {
+        List<Producto> productosElegibles = CollectionProducto.productos.stream()
+            .filter(Producto::isCuotas) // Filtrar productos que aplican para cuotas
+            .filter(producto -> {
+                Stock stock = CollectionStock.buscarStock(producto); // Buscar el stock del producto
+                return stock != null && stock.getCantidad() > 0; // Asegurarse que hay stock disponible
+            })
+            .collect(Collectors.toList());
+
+        if (productosElegibles.isEmpty()) {
+            System.out.println("No hay electrodomésticos elegibles para el programa Ahora 30.");
+        } else {
+            System.out.println("\nLista de electrodomésticos elegibles para el programa Ahora 30:");
+            for (Producto producto : productosElegibles) {
+                System.out.println(producto);
+            }
+        }
+    }
+    private static void revisarCreditos() {
+        System.out.print("Ingrese el DNI del cliente: ");
+        long dniCliente = scanner.nextLong();
+        scanner.nextLine(); // Limpiar buffer
+
+        List<Credito> creditos = CollectionCredito.buscarCreditosPorCliente(dniCliente);
+        
+        if (creditos.isEmpty()) {
+            System.out.println("No se encontraron créditos para el cliente con DNI: " + dniCliente);
+        } else {
+            System.out.println("\nCréditos asociados al cliente (DNI: " + dniCliente + "):");
+            for (Credito credito : creditos) {
+                System.out.println(credito); // Asumiendo que toString() está bien implementado en la clase Credito
+            }
+        }
+    }
+
+    
+    
+
+
+
 
 
 }
