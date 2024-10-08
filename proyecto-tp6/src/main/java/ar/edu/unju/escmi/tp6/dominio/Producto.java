@@ -6,19 +6,30 @@ public class Producto {
     private String descripcion;
     private double precioUnitario;
     private String origenFabricacion;
+    private boolean cuotas;
 
     public Producto() {
 
     }
 
-    public Producto(long codigo, String descripcion, double precioUnitario, String origenFabricacion) {
+    public Producto(long codigo, String descripcion, double precioUnitario, String origenFabricacion, boolean cuotas) {
         this.codigo = codigo;
         this.descripcion = descripcion;
         this.precioUnitario = precioUnitario;
         this.origenFabricacion = origenFabricacion;
+        this.cuotas=cuotas;
     }
 
-    public long getCodigo() {
+    
+    public boolean isCuotas() {
+		return cuotas;
+	}
+
+	public void setCuotas(boolean cuotas) {
+		this.cuotas = cuotas;
+	}
+
+	public long getCodigo() {
         return codigo;
     }
 
@@ -53,6 +64,6 @@ public class Producto {
     @Override
     public String toString() {
         return "Codigo: " + codigo + " Descripcion: " + descripcion + " Precio Unitario: " + precioUnitario
-                + " Origen fabricacion: " + origenFabricacion;
+                + " Origen fabricacion: " + origenFabricacion + " Elegible para cuotas: " + (cuotas ? "Sí" : "No");
     }
 }

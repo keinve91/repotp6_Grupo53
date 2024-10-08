@@ -74,4 +74,16 @@ public class Cliente {
 		}
 		return shoppingList;
 	}
+
+
+	@Override
+	public String toString() {
+        return "Cliente{" +
+                "DNI=" + dni +
+                ", Nombre='" + nombre + '\'' +
+                ", Dirección='" + direccion + '\'' +
+                ", Teléfono='" + telefono + '\'' +
+                '}';
+    }
+	
 }
