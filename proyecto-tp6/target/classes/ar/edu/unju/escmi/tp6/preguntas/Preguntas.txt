@@ -1,0 +1,17 @@
+3.- Responda las siguientes preguntas:
+a) ¿Por qué no se dibuja la relación de agregación entre la clase CollectionProducto y
+Producto?
+Porque al dibujar una relación de agregación no añadimos información nueva al diagrama, ya que se entiende que collectionProducto agrupa o contiene objetos de producto. 
+b) ¿Cuántos atributos tiene la clase Factura? ¿Cuáles son los nombres de esos
+atributos?
+Tiene 2 atributos. La fecha, que es de tipo LocalDate, y nroFactura, de tipo long
+c) ¿Cómo se llama la relación que se establece entre Factura y Detalle?
+Es una composición, por la multiplicidad y porque detalle no puede existir sin una factura
+d) ¿Cómo se llama la relación entre las clases Factura y Cliente?
+Es una asociación, el cliente puede tener varias facturas y una factura esta vinculada a un solo cliente
+e) ¿Por qué los atributos de las clases Collections son públicos?
+Para poder manipular mas fácil los datos, evitando crear métodos adicionales para modificar u obtener los elementos
+f) Describa las características de todos los métodos de la clase CollectionClientes.
+AgregarCliente(in cliente: Cliente) Recibe como parámetro un objeto tipo cliente y lo agrega a la colección de clientes
+PreCargarCliente() Precarga una lista de clientes
++buscarCliente(in dni: long) : Cliente. Sirve para buscar un cliente dentro de la colección usando el DNI como criterio de búsqueda. Si encuentra un cliente con ese DNI lo devuelve.
